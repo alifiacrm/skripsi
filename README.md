@@ -8,8 +8,9 @@ Repository Skripsi
 ### Feature index
 
 Berikut adalah tabel fitur
-Nomor   | Rentang   | Jumlah    | Keterangan    | Metode
-\--------\|-----------\|-----------\|---------------\|-------
+
+Nomor | Rentang | Jumlah | Keterangan | Metode
+------------ | ------------- | ------------- | ------------- | -------------
 1 | 1 .. 2  | 2  | Image Centroid  | Zoning
 2 | 3 .. 27 | 25 | X Zone Centroid | Zoning
 3 | 28 .. 52 | 25 | Y Zone Centroid | Zoning
