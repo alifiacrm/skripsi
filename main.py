@@ -24,10 +24,10 @@ import csv
 
 #=======| Variabel |========
 start_time = time.time()
-# path_source = "D:/Code/skripsi/dataset/data/"
-# path_save = "D:/Code/skripsi/dataset/resize/"
-path_source = "D:/Code/skripsi/dataset/test/"
-path_save = "D:/Code/skripsi/dataset/test_resize/"
+# path_source = "D:/Code/repository/skripsi/dataset/data/"
+# path_save = "D:/Code/repository/skripsi/dataset/resize/"
+path_source = "D:/Code/repository/skripsi/dataset/test/"
+path_save = "D:/Code/repository/skripsi/dataset/test_resize/"
 size = 50
 count = 1
 zoning_pixel_size = 10
@@ -52,13 +52,20 @@ for item in dirs:
         progress(count, numberfiles, "Feature extraction")
         count += 1
 
+
+
+label = list()
+for i in range(0, len(feature[0]['value'])):
+    label.append("f"+str(i+1))
+
 print("")
 count=0
+
 with open('data.csv', 'w', newline='') as csvfile:
     datawriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
     # Label
-    datawriter.writerow(feature[0]['label'])
+    datawriter.writerow(label)
     # Value
     for i in range(0, len(feature)):
         datawriter.writerow(feature[i]['value'])
@@ -67,7 +74,7 @@ with open('data.csv', 'w', newline='') as csvfile:
     progress(count, len(feature), "Writing data.csv")
 
 print("\nProgram running in %s seconds" % (time.time() - start_time))
-
+# print(len(feature[0]['value']))
 # for i in range(0, len(feature)):
     # print(i,' : ', len(feature[i]['label']))
 #     for j in range(0, len(feature[i]['label'])):

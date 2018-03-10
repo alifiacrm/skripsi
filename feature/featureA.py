@@ -10,15 +10,17 @@ def zoning(image, row, col):
     XImageCentroid, YImageCentroid = ndimage.measurements.center_of_mass(image)
 
     value.append(float(str(round(XImageCentroid,2))))
-    label.append(str("XIC"))
+    # label.append(str("f1"))
     value.append(float(str(round(YImageCentroid,2))))
-    label.append(str("YIC"))
+    # label.append(str("f2"))
 
     TotalRow = int(image.shape[0]/row)
     TotalCol = int(image.shape[1]/col)
 
 
     ZoneCentroid = list()     # zone centroid
+    XZoneCentroidL = list()
+    YZoneCentroidL = list()
     EuclidianImageToZone = list()   # zone euclidian beetwen image centroid and zone centroid
     EuclidianZoneToZone = list()    # zone euclidian each zone to zone
     EuclidianImageToPixel = list()    # Image Centroid to each pixel
@@ -35,47 +37,56 @@ def zoning(image, row, col):
             ZoneCentroid.append((XZoneCentroid, YZoneCentroid))
             # EuclidianImageToZone.append(ZoneToImage)
 
-            value.append(float(str(round(XZoneCentroid,2))))
-            label.append(str("XZC"+str(i)))
-            value.append(float(str(round(YZoneCentroid,2))))
-            label.append(str("YZC"+str(i)))
-            value.append(float(str(round(ZoneToImage,2))))
-            label.append(str("ZTI"+str(i)))
+            XZoneCentroidL.append(float(str(round(XZoneCentroid,2))))
+            # label.append(str("XZC"+str(i)))
+            YZoneCentroidL.append(float(str(round(YZoneCentroid,2))))
+            # label.append(str("YZC"+str(i)))
+            EuclidianImageToZone.append(float(str(round(ZoneToImage,2))))
+            # label.append(str("ZTI"+str(i)))
             x2+=row; y2+= col;
             countzti+=1
         x1+=row;y1+=col;
+    value += XZoneCentroidL
+    value += YZoneCentroidL
+    value += EuclidianImageToZone
 
     # Zone to zone
     countztz = 0
     for i in range(0, (TotalRow*TotalCol)):
         for j in range(i+1, (TotalRow*TotalCol)):
             Zonetozone = (np.sqrt(((ZoneCentroid[i][0] - ZoneCentroid[j][0])**2) + ((ZoneCentroid[i][1] - ZoneCentroid[j][1])**2)))
-            # EuclidianZoneToZone.append(Zonetozone)
+            EuclidianZoneToZone.append(Zonetozone)
 
-            value.append(float(str(round(Zonetozone,2))))
-            label.append(str("ZTZ"+str(i)+str(j)))
+            # value.append(float(str(round(Zonetozone,2))))
+            # label.append(str("ZTZ"+str(i)+str(j)))
             countztz+=1
+    value += EuclidianZoneToZone
+
+    # Pixel to image
     countitp = 0
     for i in range(0, image.shape[0]):
         for j in range(0, image.shape[1]):
             centroidtopixel = (np.sqrt(((i - XImageCentroid)**2) + ((j - YImageCentroid)**2)))
-            # EuclidianImageToPixel.append(centroidtopixel)
+            EuclidianImageToPixel.append(centroidtopixel)
 
-            value.append(float(str(round(centroidtopixel,2))))
-            label.append(str("ITP"+str(i)+str(j)))
+            # value.append(float(str(round(centroidtopixel,2))))
+            # label.append(str("ITP"+str(i)+str(j)))
             countitp+=1
 
+    value += EuclidianImageToPixel
     # print("Image Centroid : ", Imc)
     # print("Zone Centroid  : ",ZoneCentroid)
     # print("Zone to Image  : ",EuclidianImageToZone)
     # print("Zone to Zone   : ",EuclidianZoneToZone)
     # print("Image to pix   : ",EuclidianImageToPixel)
-    feature = dict()
-    feature['label'] = label
-    feature['value'] = value
-    # print("countzt1 : ", countzti)
+
+
+    # print("countzti : ", countzti)
     # print("countztz : ",countztz)
     # print("countitp : ",countitp)
+
+    feature = dict()
+    feature['value'] = value
     return feature
 
 #counting the number of black pixel
