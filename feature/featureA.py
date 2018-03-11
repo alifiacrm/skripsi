@@ -1,6 +1,14 @@
 from scipy import ndimage
 import numpy as np
 
+def pixel_count(image):
+    count = 0
+    for i in range(0, image.shape[0]):
+        for j in range(0, image.shape[0]):
+            if image[i,j] == False:
+                count+=1
+    return count
+
 def zoning(image, row, col):
     # Variabel penampung sementara
     label = list()
@@ -24,6 +32,9 @@ def zoning(image, row, col):
     EuclidianImageToZone = list()   # zone euclidian beetwen image centroid and zone centroid
     EuclidianZoneToZone = list()    # zone euclidian each zone to zone
     EuclidianImageToPixel = list()    # Image Centroid to each pixel
+    Black = list()
+    BlackperBlack = list()
+    BlackperWhite = list()
     x1 = 0; y1 = col;
 
     # Zone Centroid and Distance Zone to Image
@@ -32,6 +43,9 @@ def zoning(image, row, col):
         x2 = 0; y2 = col;
         for j in range(0, TotalCol):
             XZoneCentroid, YZoneCentroid = ndimage.measurements.center_of_mass(image[x1:y1,x2:y2])
+            tmp = pixel_count(image[x1:y1,x2:y2])
+            Black.append(tmp)
+
             ZoneToImage = np.sqrt(((XImageCentroid - XZoneCentroid)**2) + ((YImageCentroid - YZoneCentroid)**2))
 
             ZoneCentroid.append((XZoneCentroid, YZoneCentroid))
@@ -43,12 +57,12 @@ def zoning(image, row, col):
             # label.append(str("YZC"+str(i)))
             EuclidianImageToZone.append(float(str(round(ZoneToImage,2))))
             # label.append(str("ZTI"+str(i)))
+            BlackperWhite.append(float(str(round((tmp/((row*col)-tmp)),2))))
             x2+=row; y2+= col;
             countzti+=1
         x1+=row;y1+=col;
-    value += XZoneCentroidL
-    value += YZoneCentroidL
-    value += EuclidianImageToZone
+    # print(BlackperWhite)
+
 
     # Zone to zone
     countztz = 0
@@ -57,11 +71,19 @@ def zoning(image, row, col):
             Zonetozone = (np.sqrt(((ZoneCentroid[i][0] - ZoneCentroid[j][0])**2) + ((ZoneCentroid[i][1] - ZoneCentroid[j][1])**2)))
             EuclidianZoneToZone.append(Zonetozone)
 
+            # Black per black
+            if Black[j] == 0:
+                tmp = 0
+            else:
+                tmp = Black[i]/Black[j]
+            BlackperBlack.append( float(str(round(tmp,2))) )
+            # print(i, " - ", j, " : ", Black[i], " : ", Black[j])
+
             # value.append(float(str(round(Zonetozone,2))))
             # label.append(str("ZTZ"+str(i)+str(j)))
             countztz+=1
-    value += EuclidianZoneToZone
 
+    # print(len(BlackperBlack))
     # Pixel to image
     countitp = 0
     for i in range(0, image.shape[0]):
@@ -73,7 +95,13 @@ def zoning(image, row, col):
             # label.append(str("ITP"+str(i)+str(j)))
             countitp+=1
 
+    value += XZoneCentroidL
+    value += YZoneCentroidL
+    value += EuclidianImageToZone
+    value += EuclidianZoneToZone
     value += EuclidianImageToPixel
+    value += BlackperWhite
+    value += BlackperBlack
     # print("Image Centroid : ", Imc)
     # print("Zone Centroid  : ",ZoneCentroid)
     # print("Zone to Image  : ",EuclidianImageToZone)
