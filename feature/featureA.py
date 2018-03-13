@@ -8,19 +8,20 @@ def pixel_count(image):
             if image[i,j] == False:
                 count+=1
     return count
-
+# Image Partitioning Approaches
 def zoning(image, row, col):
     # Variabel penampung sementara
     label = list()
-    value = list()
+    feature = list()
 
     # Image Centroid
     XImageCentroid, YImageCentroid = ndimage.measurements.center_of_mass(image)
 
-    value.append(float(str(round(XImageCentroid,2))))
-    # label.append(str("f1"))
-    value.append(float(str(round(YImageCentroid,2))))
-    # label.append(str("f2"))
+    # feature.append(float(str(round(XImageCentroid,2))))
+    # feature.append(float(str(round(YImageCentroid,2))))
+
+    feature.append(XImageCentroid)
+    feature.append(YImageCentroid)
 
     TotalRow = int(image.shape[0]/row)
     TotalCol = int(image.shape[1]/col)
@@ -43,7 +44,8 @@ def zoning(image, row, col):
         x2 = 0; y2 = col;
         for j in range(0, TotalCol):
             XZoneCentroid, YZoneCentroid = ndimage.measurements.center_of_mass(image[x1:y1,x2:y2])
-            tmp = pixel_count(image[x1:y1,x2:y2])
+            tmp = np.sum(image[x1:y1,x2:y2])
+            tmp = (row*col)-tmp
             Black.append(tmp)
 
             ZoneToImage = np.sqrt(((XImageCentroid - XZoneCentroid)**2) + ((YImageCentroid - YZoneCentroid)**2))
@@ -51,13 +53,16 @@ def zoning(image, row, col):
             ZoneCentroid.append((XZoneCentroid, YZoneCentroid))
             # EuclidianImageToZone.append(ZoneToImage)
 
-            XZoneCentroidL.append(float(str(round(XZoneCentroid,2))))
-            # label.append(str("XZC"+str(i)))
-            YZoneCentroidL.append(float(str(round(YZoneCentroid,2))))
-            # label.append(str("YZC"+str(i)))
-            EuclidianImageToZone.append(float(str(round(ZoneToImage,2))))
-            # label.append(str("ZTI"+str(i)))
-            BlackperWhite.append(float(str(round((tmp/((row*col)-tmp)),2))))
+            # XZoneCentroidL.append(float(str(round(XZoneCentroid,2))))
+            # YZoneCentroidL.append(float(str(round(YZoneCentroid,2))))
+            # EuclidianImageToZone.append(float(str(round(ZoneToImage,2))))
+            # BlackperWhite.append(float(str(round((tmp/((row*col)-tmp)),2))))
+
+            XZoneCentroidL.append(XZoneCentroid)
+            YZoneCentroidL.append(YZoneCentroid)
+            EuclidianImageToZone.append(ZoneToImage)
+            BlackperWhite.append((tmp/((row*col)-tmp)))
+
             x2+=row; y2+= col;
             countzti+=1
         x1+=row;y1+=col;
@@ -76,14 +81,9 @@ def zoning(image, row, col):
                 tmp = 0
             else:
                 tmp = Black[i]/Black[j]
-            BlackperBlack.append( float(str(round(tmp,2))) )
-            # print(i, " - ", j, " : ", Black[i], " : ", Black[j])
-
-            # value.append(float(str(round(Zonetozone,2))))
-            # label.append(str("ZTZ"+str(i)+str(j)))
+            BlackperBlack.append(tmp)
             countztz+=1
 
-    # print(len(BlackperBlack))
     # Pixel to image
     countitp = 0
     for i in range(0, image.shape[0]):
@@ -91,17 +91,17 @@ def zoning(image, row, col):
             centroidtopixel = (np.sqrt(((i - XImageCentroid)**2) + ((j - YImageCentroid)**2)))
             EuclidianImageToPixel.append(centroidtopixel)
 
-            # value.append(float(str(round(centroidtopixel,2))))
+            # feature.append(float(str(round(centroidtopixel,2))))
             # label.append(str("ITP"+str(i)+str(j)))
             countitp+=1
 
-    value += XZoneCentroidL
-    value += YZoneCentroidL
-    value += EuclidianImageToZone
-    value += EuclidianZoneToZone
-    value += EuclidianImageToPixel
-    value += BlackperWhite
-    value += BlackperBlack
+    feature += XZoneCentroidL
+    feature += YZoneCentroidL
+    feature += EuclidianImageToZone
+    feature += EuclidianZoneToZone
+    feature += EuclidianImageToPixel
+    feature += BlackperWhite
+    feature += BlackperBlack
     # print("Image Centroid : ", Imc)
     # print("Zone Centroid  : ",ZoneCentroid)
     # print("Zone to Image  : ",EuclidianImageToZone)
@@ -112,47 +112,24 @@ def zoning(image, row, col):
     # print("countzti : ", countzti)
     # print("countztz : ",countztz)
     # print("countitp : ",countitp)
-
-    feature = dict()
-    feature['value'] = value
+    # print(len(feature))
     return feature
 
-#counting the number of black pixel
-def zoning_dev(image, type=None, size=None):
-    if type == 1:
-        # Ukuran Pixel
-        # print ("Type 1")
-        imagepixel = int(image.shape[0] * image.shape[1])
-        zonepixel = int(size * size)
-        zone = int(imagepixel / zonepixel)
+# Histogram Based Approaches
+def projection_histogram(image):
+    row = image.shape[0]
+    col = image.shape[1]
+    vertical = list()
+    horizontal = list()
 
-        x = 0
-        y = size
-        zonevalue = list()
-        for i in range (0, int(image.shape[0]/size)):
-            #horizontal
-            value = 0
-            count = 1
-            for j in range (0, image.shape[1]):
-                # ini apanya
-                for k in range(x, y):
-                    if image[k,j] == True:
-                        value+=1
-                        # print(value)
-                if count != size:
-                    count+=1
-                else:
-                    zonevalue.append((value))
-                    count = 1
-                    value = 0
-            x+=size
-            y+=size
-        print(zonevalue)
+    # Stardart Projection Histogram 2D
+    for i in range(row):
+        horizontal.append(np.sum(image[i:i+1,0:]))
 
-    elif type == 2:
-        # Jumlah Zone
-        print ("type 2")
-        print(image.shape[0])
-        print(image.shape[1])
-    else:
-        print ("Type should be added : pixel size (1) or zone sum (2)")
+    for i in range(col):
+        vertical.append(np.sum(image[0:,i:i+1]))
+
+    feature = list()
+    feature = horizontal + vertical
+    # print(len(feature))
+    return feature
